@@ -1,0 +1,6 @@
+We are looking for a Python developer with experience in:
+- Flask or Django
+- REST APIs
+- SQL databases
+- Version control (Git)
+- Problem-solving and data structures

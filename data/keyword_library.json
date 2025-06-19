@@ -1,0 +1,32 @@
+{
+  "skills": [
+    "python", "java", "c++", "sql", "nosql", "excel", "git", "html", "css", "javascript",
+    "flask", "django", "react", "nodejs", "rest apis", "graphql", "pandas", "numpy",
+    "matplotlib", "seaborn", "tensorflow", "pytorch", "scikit-learn", "power bi",
+    "tableau", "linux", "docker", "kubernetes", "bash", "shell scripting",
+    "seo", "sem", "content writing", "copywriting", "email marketing",
+    "social media marketing", "graphic design", "ui", "ux", "figma", "canva",
+    "customer support", "crm", "sap", "tally", "excel", "quickbooks", "ms office"
+  ],
+  "concepts": [
+    "data structures", "algorithms", "version control", "problem solving",
+    "object oriented programming", "relational databases", "cloud computing",
+    "distributed systems", "agile methodology", "data wrangling", "normalization",
+    "branding", "consumer behavior", "financial modeling", "recruitment process",
+    "employee engagement", "market research", "target audience", "conversion rate"
+  ],
+  "roles": [
+    "software developer", "data analyst", "backend engineer", "frontend engineer",
+    "machine learning engineer", "full stack developer", "business analyst",
+    "data engineer", "product analyst", "product manager", "marketing executive",
+    "hr intern", "hr manager", "digital marketing associate", "graphic designer",
+    "content strategist", "finance intern", "accounts executive", "research associate"
+  ],
+  "tools": [
+    "vscode", "pycharm", "jupyter", "anaconda", "postman", "aws", "azure",
+    "gcp", "power bi", "google sheets", "mysql", "postgresql", "mongodb",
+    "jira", "github", "gitlab", "bitbucket", "notion", "slack", "figma",
+    "canva", "photoshop", "illustrator", "zoho", "tally", "hubspot",
+    "mailchimp", "salesforce", "excel", "word", "powerpoint", "notion", "clickup"
+  ]
+}
