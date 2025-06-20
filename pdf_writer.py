@@ -14,108 +14,116 @@ def write_suggestions_to_pdf(
 ):
     c = canvas.Canvas(output_path, pagesize=LETTER)
     width, height = LETTER
-    y = height - 72
 
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(72, y, "Resume Improvement Suggestions")
-    y -= 40
+    # 🔧 Reduced margins
+    left_margin = 36   # Half inch
+    right_margin = 36
+    top_margin = 36
+    bottom_margin = 36
 
-    # 📊 Resume-JD Match Stats
+    y = height - top_margin
+
+    # ✏️ Reduced font sizes
+    header_font = 14
+    subheader_font = 12
+    normal_font = 11
+    line_spacing = 13
+
+    c.setFont("Helvetica-Bold", header_font)
+    title = "Resume Improvement Suggestions"
+    text_width = c.stringWidth(title, "Helvetica-Bold", header_font)
+    x_center = (width - text_width) / 2
+    c.drawString(x_center, y, title)
+
+    underline_y = y - 2  # slightly below the text baseline
+    c.line(x_center, underline_y, x_center + text_width, underline_y)
+
+
+    y -= 2 * line_spacing
+
     if match_percent is not None:
-        c.setFont("Helvetica-Bold", 14)
-        c.drawString(72, y, f"📊 Resume–JD Match: {match_percent}%")
-        y -= 30  # spacing after match %
-        c.setFont("Helvetica", 12)
+        c.setFont("Helvetica-Bold", subheader_font)
+        c.drawString(left_margin, y, f"📊 Resume–JD Match: {match_percent}%")
+        y -= 2 * line_spacing
+
+        c.setFont("Helvetica", normal_font)
         if matched_keywords:
             matched_text = f"✅ Matched Keywords ({len(matched_keywords)}): {', '.join(matched_keywords)}"
-            for line in textwrap.wrap(matched_text, width=90):
-                c.drawString(72, y, line)
-                y -= 15
+            for line in textwrap.wrap(matched_text, width=100):
+                c.drawString(left_margin, y, line)
+                y -= line_spacing
+
         if missing_keywords:
             missing_text = f"❌ Missing Keywords ({len(missing_keywords)}): {', '.join(missing_keywords)}"
-            for line in textwrap.wrap(missing_text, width=90):
-                c.drawString(72, y, line)
-                y -= 15
-        y -= 30  # ✅ add spacing before next section
+            for line in textwrap.wrap(missing_text, width=100):
+                c.drawString(left_margin, y, line)
+                y -= line_spacing
+        y -= line_spacing
 
-    # 🔥 High Priority Section
     if high_priority:
-        c.setFont("Helvetica-Bold", 14)
-        c.drawString(72, y, "🔥 High-Priority Keywords (frequent in JD):")
-        y -= 20
-        c.setFont("Helvetica", 12)
-        for word, count in high_priority:
-            c.drawString(90, y, f"- {word} (mentioned {count} times)")
-            y -= 15
-            if y < 72:
-                c.showPage()
-                y = height - 72
-        y -= 20
+        c.setFont("Helvetica-Bold", subheader_font)
+        c.drawString(left_margin, y, "🔥 High-Priority Keywords (frequent in JD):")
+        y -= line_spacing * 2
 
-    # 🧠 Categorized Keywords
+        c.setFont("Helvetica", normal_font)
+        for word, count in high_priority:
+            c.drawString(left_margin + 15, y, f"- {word} (mentioned {count} times)")
+            y -= line_spacing
+            if y < bottom_margin:
+                c.showPage()
+                y = height - top_margin
+                c.setFont("Helvetica", normal_font)
+        y -= line_spacing
+
     def draw_section(title, items):
         nonlocal y
         if not items:
             return
-        c.setFont("Helvetica-Bold", 14)
-        c.drawString(72, y, title)
-        y -= 20
-        c.setFont("Helvetica", 12)
+        c.setFont("Helvetica-Bold", subheader_font)
+        c.drawString(left_margin, y, title)
+        y -= line_spacing
+
+        c.setFont("Helvetica", normal_font)
         for word in items:
-            c.drawString(90, y, f"- {word}")
-            y -= 15
-            if y < 72:
+            c.drawString(left_margin + 15, y, f"- {word}")
+            y -= line_spacing
+            if y < bottom_margin:
                 c.showPage()
-                y = height - 72
-        y -= 20
+                y = height - top_margin
+                c.setFont("Helvetica", normal_font)
+        y -= line_spacing
 
-    draw_section("🧠 Suggested Technical Skills to Add:", categorized_keywords.get("skills", []))
-    # draw_section("📚 CS Concepts or Fundamentals:", categorized_keywords.get("concepts", []))
-    # draw_section("🎯 Role/Industry Terms:", categorized_keywords.get("roles", []))
-    # draw_section("🔍 Other Possibly Relevant Terms:", categorized_keywords.get("others", []))
-
-    # 📌 Suggested Insertion Points
     if locations:
-        c.setFont("Helvetica-Bold", 14)
-        c.drawString(72, y, "📌 Where to Add These:")
-        y -= 20
-        c.setFont("Helvetica", 12)
+        c.setFont("Helvetica-Bold", subheader_font)
+        c.drawString(left_margin, y, "🧠 Suggested Technical Skills And Where To Add:")
+        y -= line_spacing * 2
+
+        c.setFont("Helvetica", normal_font)
         for word, section in locations.items():
-            c.drawString(90, y, f"• '{word}' → {section}")
-            y -= 15
-            if y < 72:
+            c.drawString(left_margin + 15, y, f"• '{word}' → {section}")
+            y -= line_spacing
+            if y < bottom_margin:
                 c.showPage()
-                y = height - 72
-        y -= 30  # ✅ spacing after this section
+                y = height - top_margin
+                c.setFont("Helvetica", normal_font)
+        y -= line_spacing
 
-    # ✍️ Suggested Lines
     if suggested_lines:
-        c.setFont("Helvetica-Bold", 14)
-        c.drawString(72, y, "✍️ AI-Generated Resume Lines:")
-        y -= 30  # ✅ spacing for heading
-        c.setFont("Helvetica", 12)
-        for word, line, section in suggested_lines:
-            wrapped_lines = textwrap.wrap(f"• {line}  [{section}]", width=100)
-            for wrap in wrapped_lines:
-                c.drawString(90, y, wrap)
-                y -= 13  # ✅ tighter spacing between lines
-                if y < 72:
-                    c.showPage()
-                    y = height - 72
-        y -= 30  # ✅ spacing before next section
+        c.setFont("Helvetica-Bold", subheader_font)
+        c.drawString(left_margin, y, "✍️ AI-Generated Resume Lines:")
+        y -= line_spacing * 2
 
-    # 💡 General Resume Tips
-    c.setFont("Helvetica-Bold", 14)
-    c.drawString(72, y, "💡 General Resume Tips:")
-    y -= 20
-    for tip in [
-        "• Tailor your resume to the job description.",
-        "• Use numbers and impact: 'Increased accuracy by 20%'",
-        "• Keep it 1 page (if <2 years experience).",
-    ]:
-        c.setFont("Helvetica", 12)
-        c.drawString(90, y, tip)
-        y -= 15
+        c.setFont("Helvetica", normal_font)
+        for word, line, section in suggested_lines:
+            wrapped_lines = textwrap.wrap(f"• {line}  [{section}]", width=105)
+            for wrap in wrapped_lines:
+                c.drawString(left_margin + 15, y, wrap)
+                y -= line_spacing
+                if y < bottom_margin:
+                    c.showPage()
+                    y = height - top_margin
+                    c.setFont("Helvetica", normal_font)
+        y -= line_spacing
 
     c.save()
 

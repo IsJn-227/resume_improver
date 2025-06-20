@@ -1,16 +1,22 @@
 from collections import Counter
-import re  # used here for text cleaning with regular expressions
+import re
 from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+from fuzzywuzzy import fuzz
+
+import nltk
+nltk.download('punkt', quiet=True)
+nltk.download('stopwords', quiet=True)
+nltk.download('wordnet', quiet=True)
+
+lemmatizer = WordNetLemmatizer()
 
 def clean_text(text):
     """
-    Cleans input text by removing punctuation, converting to lowercase,
-    and removing stopwords (common words + custom irrelevant resume words).
+    Cleans and lemmatizes input text.
+    Removes punctuation, stopwords, and converts to lowercase.
     """
-    # Remove punctuation and convert to lowercase
     text = re.sub(r'[^\w\s]', '', text.lower())
-
-    # Get default stopwords and add custom words often found in resumes
     stop_words = set(stopwords.words('english'))
     custom_stopwords = {
         "experience", "responsible", "proficient", "strong", "skills",
@@ -19,60 +25,58 @@ def clean_text(text):
     }
     stop_words.update(custom_stopwords)
 
-    # Tokenize and filter
     words = text.split()
-    filtered_words = [word for word in words if word not in stop_words]
-    return ' '.join(filtered_words)
+    filtered = [lemmatizer.lemmatize(w) for w in words if w not in stop_words]
+    return filtered
 
-def match_keywords(resume_text, jd_text):
+def match_keywords(resume_text, jd_text, threshold=85):
     """
-    Compares words in resume and job description (JD).
-    Returns:
-        - matched_keywords_count: how many keywords overlap
-        - total_jd_keywords: how many meaningful words in JD
-        - list_of_matched_words: actual common words
+    Compares resume and JD using lemmatization + fuzzy matching.
+    Returns match count, total JD keywords, and matched keyword list.
     """
-    resume_clean = clean_text(resume_text)
-    jd_clean = clean_text(jd_text)
+    resume_tokens = clean_text(resume_text)
+    jd_tokens = clean_text(jd_text)
 
-    resume_words = Counter(resume_clean.split())
-    jd_words = Counter(jd_clean.split())
+    matched = []
+    for jd_word in jd_tokens:
+        for res_word in resume_tokens:
+            if jd_word == res_word or fuzz.partial_ratio(jd_word, res_word) >= threshold:
+                matched.append(jd_word)
+                break
 
-    matched = jd_words & resume_words  # intersection of both
-    matched_keywords = list(matched.keys())  # matched qualities or requirements (keywords) in JD and resume
+    return len(matched), len(set(jd_tokens)), list(set(matched))
 
-    return sum(matched.values()), sum(jd_words.values()), matched_keywords
-
-def get_missing_keywords(resume_text, jd_text):
+def get_missing_keywords(resume_text, jd_text, threshold=85):
     """
-    Identifies which JD keywords are missing from the resume.
-    Filters out very short tokens.
+    Returns list of missing JD keywords not found in resume.
+    Uses fuzzy matching to allow flexible matching.
     """
-    resume_clean = clean_text(resume_text)
-    jd_clean = clean_text(jd_text)
+    resume_tokens = clean_text(resume_text)
+    jd_tokens = clean_text(jd_text)
 
-    resume_words = set(resume_clean.split())
-    jd_words = set(jd_clean.split())
+    missing = []
+    for jd_word in set(jd_tokens):
+        matched = any(
+            jd_word == res_word or fuzz.partial_ratio(jd_word, res_word) >= threshold
+            for res_word in resume_tokens
+        )
+        if not matched and len(jd_word) > 2:
+            missing.append(jd_word)
 
-    missing_keywords = jd_words - resume_words
-
-    # Optional: remove anything shorter than 3 characters (e.g. "in", "to")
-    missing_keywords = [word for word in missing_keywords if len(word) > 2]
-
-    return sorted(missing_keywords)
+    return sorted(missing)
 
 def categorize_keywords(keywords):
     """
     Classifies missing keywords into categories:
-        - skills: tech tools, frameworks, languages
-        - concepts: CS or engineering fundamentals
-        - roles: position-related terms
-        - others: everything else
+    - skills: tech tools, frameworks, languages
+    - concepts: CS or engineering fundamentals
+    - roles: position-related terms
+    - others: everything else
     """
     keyword_map = {
-        "skills": {"python", "sql", "git", "rest", "apis", "flask", "django"},
-        "concepts": {"control", "structures", "version", "problemsolving"},
-        "roles": {"developer"},
+        "skills": {"python", "sql", "git", "rest", "apis", "flask", "django", "docker", "aws"},
+        "concepts": {"control", "structures", "version", "algorithms", "problem-solving"},
+        "roles": {"developer", "engineer", "internship"},
     }
 
     categorized = {"skills": [], "concepts": [], "roles": [], "others": []}
@@ -92,18 +96,17 @@ def categorize_keywords(keywords):
 
 def get_high_priority_keywords(jd_text, missing_keywords, min_occurrences=2):
     """
-    From JD, identify which of the missing keywords are high-priority based on frequency.
+    Identifies high-priority missing keywords based on frequency in the JD.
     """
-    clean_jd = clean_text(jd_text)
-    jd_words = clean_jd.split()
-    freq = Counter(jd_words)
+    jd_tokens = clean_text(jd_text)
+    freq = Counter(jd_tokens)
 
     high_priority = []
     normal = []
 
     for word in missing_keywords:
         if freq[word] >= min_occurrences:
-            high_priority.append((word, freq[word]))  # include count
+            high_priority.append((word, freq[word]))
         else:
             normal.append(word)
 
@@ -111,16 +114,14 @@ def get_high_priority_keywords(jd_text, missing_keywords, min_occurrences=2):
 
 def suggest_keyword_locations(missing_keywords, resume_sections):
     """
-    Suggests where (which section) to insert missing keywords in the resume.
-    Example: 'python' → Skills, 'teamwork' → Experience, etc.
+    Suggests which resume section each missing keyword should go in.
     """
     suggestions = {}
 
     for keyword in missing_keywords:
         keyword_lower = keyword.lower()
 
-        # Heuristics based on keyword nature
-        if keyword_lower in {"python", "sql", "flask", "django", "git", "excel", "tableau"}:
+        if keyword_lower in {"python", "sql", "flask", "django", "git", "excel", "tableau", "docker", "aws"}:
             suggestions[keyword] = "Skills / Technical Skills"
         elif keyword_lower in {"communication", "teamwork", "leadership", "collaboration", "management"}:
             suggestions[keyword] = "Experience / Projects"
@@ -129,7 +130,6 @@ def suggest_keyword_locations(missing_keywords, resume_sections):
         elif keyword_lower in {"algorithms", "structures", "data", "problem-solving"}:
             suggestions[keyword] = "Projects / Education"
         else:
-            # Fallback: check if a section has similar context
             assigned = False
             for section, content in resume_sections.items():
                 if keyword_lower in content.lower():

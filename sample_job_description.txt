@@ -1,6 +1,38 @@
-We are looking for a Python developer with experience in:
-- Flask or Django
-- REST APIs
-- SQL databases
-- Version control (Git)
-- Problem-solving and data structures
+We are looking for a Python developer who is passionate about building scalable backend systems and solving real-world problems. The ideal candidate should have hands-on experience with:
+
+🔧 Core Technical Skills:
+-Python (strong foundational understanding and production-level experience)
+
+Web Frameworks:
+-Proficiency in Flask or Django for building web applications and APIs
+
+API Development:
+-Designing and consuming RESTful APIs
+-Experience with tools like Postman or Swagger
+
+Databases:
+-Working knowledge of SQL databases like PostgreSQL, MySQL, or SQLite
+
+Optional: Familiarity with NoSQL (e.g., MongoDB, Redis)
+
+Version Control:
+-Git and platforms like GitHub or GitLab for collaborative development
+
+Data Structures and Algorithms:
+-Strong problem-solving skills and ability to write efficient, clean code
+
+🚀 Bonus Skills (Nice to Have):
+-Background tasks using Celery, RQ, or Python threading/async
+-Authentication & Authorization (JWT, OAuth2, session-based auth)
+-Unit Testing & Debugging using unittest, pytest, or similar tools
+-Containerization: Basic knowledge of Docker and container-based deployment
+-Cloud Platforms: Exposure to AWS, GCP, or Azure for deploying apps
+-CI/CD pipelines and automation tools
+-Basic Frontend Understanding: HTML, CSS, JavaScript or frontend templating in Django
+
+🧠 Soft Skills:
+-Ability to analyze and break down problems into smaller components
+-Clear communication in a team setting
+-Familiarity with Agile methodologies or working in iterative development cycles
+-Willingness to learn quickly and pick up new tools and technologies as needed
+
