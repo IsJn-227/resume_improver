@@ -1,0 +1,7 @@
+streamlit
+pdfplumber
+nltk
+spacy
+reportlab
+fuzzywuzzy
+python-Levenshtein
