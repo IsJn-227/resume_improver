@@ -17,6 +17,12 @@ Resume Improver is a Python-based tool that analyzes your resume against a given
 
 ---
 
+🚀 [Try Resume Improver Live on Streamlit](https://resumeimprover-ypeot5agzjyl68nudkmqkk.streamlit.app/)
+
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://resumeimprover-ypeot5agzjyl68nudkmqkk.streamlit.app/)
+
+---
+
 ## ⚙️ How to Run
 
 ```bash
