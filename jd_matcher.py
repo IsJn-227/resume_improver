@@ -1,41 +1,68 @@
 from collections import Counter
 import re
+import nltk
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 from fuzzywuzzy import fuzz
+from nltk import pos_tag
+from nltk.corpus.reader.wordnet import NOUN, VERB, ADJ, ADV
 
-import nltk
+# Download necessary NLTK resources
 nltk.download('punkt', quiet=True)
 nltk.download('stopwords', quiet=True)
 nltk.download('wordnet', quiet=True)
+nltk.download('averaged_perceptron_tagger', quiet=True)
+nltk.download('omw-1.4', quiet=True)
 
 lemmatizer = WordNetLemmatizer()
+stop_words = set(stopwords.words('english'))
+
+# Extended domain-specific stopwords
+custom_stopwords = {
+    "experience", "responsible", "proficient", "proficiency", "strong", "skills", "skill", "tools", "tool", "tools"
+    "systems", "system", "platform", "platforms", "knowledge", "working", "ability", "role", "team", "individual", " proficiency"
+    "good", "capable", "interested", "familiarity", "foundation", "application", "apps", "learn", "like", "new", "passionate"
+    "solution", "solutions", "write", "using", "clean", "maintain", "background", "bonus", "communication", "experience"
+    "collaborative", "building", "understand", "require", "support", "design", "develop", "handle", "clear", "basic", "ability"
+}
+stop_words.update(custom_stopwords)
+
+# Mapping NLTK POS tags to WordNet POS
+def get_wordnet_pos(tag):
+    if tag.startswith('J'):
+        return ADJ
+    elif tag.startswith('V'):
+        return VERB
+    elif tag.startswith('N'):
+        return NOUN
+    elif tag.startswith('R'):
+        return ADV
+    else:
+        return NOUN
 
 def clean_text(text):
     """
     Cleans and lemmatizes input text.
-    Removes punctuation, stopwords, and converts to lowercase.
+    Keeps only nouns. Removes punctuation, stopwords, and converts to lowercase.
     """
     text = re.sub(r'[^\w\s]', '', text.lower())
-    stop_words = set(stopwords.words('english'))
-    custom_stopwords = {
-        "experience", "responsible", "proficient", "strong", "skills",
-        "knowledge", "working", "ability", "role", "team", "individual",
-        "good", "capable", "interested"
-    }
-    stop_words.update(custom_stopwords)
-
     words = text.split()
-    filtered = [lemmatizer.lemmatize(w) for w in words if w not in stop_words]
+    tagged = pos_tag(words)
+    filtered = [
+        lemmatizer.lemmatize(w, get_wordnet_pos(tag))
+        for w, tag in tagged
+        if tag.startswith('N') and lemmatizer.lemmatize(w, get_wordnet_pos(tag)) not in stop_words and len(w) > 2
+    ]
     return filtered
+
+from nltk.tokenize import word_tokenize
 
 def match_keywords(resume_text, jd_text, threshold=85):
     """
-    Compares resume and JD using lemmatization + fuzzy matching.
-    Returns match count, total JD keywords, and matched keyword list.
+    Looser keyword matching: tokenizes raw text and avoids over-cleaning.
     """
-    resume_tokens = clean_text(resume_text)
-    jd_tokens = clean_text(jd_text)
+    resume_tokens = set(word_tokenize(resume_text.lower()))
+    jd_tokens = set(word_tokenize(jd_text.lower()))
 
     matched = []
     for jd_word in jd_tokens:
@@ -44,13 +71,10 @@ def match_keywords(resume_text, jd_text, threshold=85):
                 matched.append(jd_word)
                 break
 
-    return len(matched), len(set(jd_tokens)), list(set(matched))
+    return len(matched), len(jd_tokens), list(set(matched))
+
 
 def get_missing_keywords(resume_text, jd_text, threshold=85):
-    """
-    Returns list of missing JD keywords not found in resume.
-    Uses fuzzy matching to allow flexible matching.
-    """
     resume_tokens = clean_text(resume_text)
     jd_tokens = clean_text(jd_text)
 
@@ -66,13 +90,6 @@ def get_missing_keywords(resume_text, jd_text, threshold=85):
     return sorted(missing)
 
 def categorize_keywords(keywords):
-    """
-    Classifies missing keywords into categories:
-    - skills: tech tools, frameworks, languages
-    - concepts: CS or engineering fundamentals
-    - roles: position-related terms
-    - others: everything else
-    """
     keyword_map = {
         "skills": {"python", "sql", "git", "rest", "apis", "flask", "django", "docker", "aws"},
         "concepts": {"control", "structures", "version", "algorithms", "problem-solving"},
@@ -95,9 +112,6 @@ def categorize_keywords(keywords):
     return categorized
 
 def get_high_priority_keywords(jd_text, missing_keywords, min_occurrences=2):
-    """
-    Identifies high-priority missing keywords based on frequency in the JD.
-    """
     jd_tokens = clean_text(jd_text)
     freq = Counter(jd_tokens)
 
@@ -113,9 +127,6 @@ def get_high_priority_keywords(jd_text, missing_keywords, min_occurrences=2):
     return high_priority, normal
 
 def suggest_keyword_locations(missing_keywords, resume_sections):
-    """
-    Suggests which resume section each missing keyword should go in.
-    """
     suggestions = {}
 
     for keyword in missing_keywords:

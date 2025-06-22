@@ -1,0 +1,13 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# VSCode or IDE junk
+.vscode/
+.idea/
+
+# PDF output
+resume_suggestions.pdf
