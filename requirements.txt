@@ -5,3 +5,5 @@ spacy
 reportlab
 fuzzywuzzy
 python-Levenshtein
+keybert
+scikit-learn
