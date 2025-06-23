@@ -1,3 +1,11 @@
+import spacy
+try:
+    nlp = spacy.load("en_core_web_sm")
+except OSError:
+    from spacy.cli import download
+    download("en_core_web_sm")
+    nlp = spacy.load("en_core_web_sm")
+
 from resume_parser import extract_text_from_pdf, split_into_sections
 from jd_matcher import (
     match_keywords,
@@ -10,6 +18,7 @@ from pdf_writer import write_suggestions_to_pdf
 from keyword_extractor import extract_keywords_with_keybert
 from spacy_filter import filter_keywords
 from line_generator import generate_resume_line
+
 
 if __name__ == "__main__":
     resume_path = "sample_resume.pdf"
