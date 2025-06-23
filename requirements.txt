@@ -1,7 +1,8 @@
 pdfplumber
 nltk
 spacy==3.7.2
-blis==0.7.9
+# Pull a prebuilt blis wheel from PyPI
+blis @ https://github.com/explosion/cython-blis/releases/download/v0.7.9/blis-0.7.9-cp310-cp310-manylinux2014_x86_64.whl
 reportlab
 fuzzywuzzy
 python-Levenshtein
